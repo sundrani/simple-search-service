@@ -9,10 +9,10 @@ requirements—including pagination, performance under 100ms, and deployment rea
 ## 🌐 Live API
 
 **Base URL:**  
-https://simple-search-service.onrender.com
+https://simple-search-service-1.onrender.com
 
 **API Docs:**  
-https://simple-search-service.onrender.com/docs
+https://simple-search-service-1.onrender.com/docs
 
 ---
 
@@ -50,7 +50,7 @@ Returns basic service health and the number of messages loaded.
 ### `GET /search`
 Example:
 ```
-https://simple-search-service.onrender.com/search?q=hello&page=1&size=10
+https://simple-search-service-1.onrender.com/search?q=hello&page=1&size=10
 ```
 
 Response Example:
