@@ -6,7 +6,7 @@ requirements—including pagination, performance under 100ms, and deployment rea
 
 ---
 
-## 🌐 Live API
+##  Live API
 
 **Base URL:**  
 https://simple-search-service-1.onrender.com
@@ -23,7 +23,7 @@ Locally, the service successfully fetches messages from:
 ```
 https://november7-730026606190.europe-west1.run.app/messages/
 ```
-
+sometimes 
 However, when running on **Render (free tier)**, calls to this endpoint return:
 
 ```
