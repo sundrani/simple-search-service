@@ -16,55 +16,45 @@ messages_cache: List[Dict[str, Any]] = []
 
 
 # @app.on_event("startup")
-# async def load_messages() -> None:
-#     """Fetch all messages from the upstream data source on startup."""
-#     global messages_cache
-#     async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
-#         response = await client.get(DATA_SOURCE_URL)
-#         response.raise_for_status()
-#         data = response.json()
-#         if not isinstance(data, list):
-#             raise RuntimeError("Expected a list of messages from data source.")
-#         messages_cache = data
-@app.on_event("startup")
-async def load_messages() -> None:
-    """
-    Fetch all messages from the upstream data source on startup
-    and keep them in memory for fast searches.
-    Handles both list and dict-shaped JSON responses.
-    """
+async def load_messages():
     global messages_cache
+    
+    url = "https://november7-730026606190.europe-west1.run.app/messages"
 
-    async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
-        response = await client.get(DATA_SOURCE_URL)
+    # Force HTTP/1.1 (Render sometimes defaults to HTTP/2)
+    limits = httpx.Limits(max_keepalive_connections=0, max_connections=1)
+
+    async with httpx.AsyncClient(
+        timeout=10.0,
+        follow_redirects=False,
+        http2=False,
+        limits=limits,
+        headers={
+            "accept": "application/json",
+            "user-agent": "Mozilla/5.0"
+        }
+    ) as client:
+        response = await client.get(url)
+
+        # If the API wants trailing slash:
+        if response.status_code == 307:
+            redirected = response.headers.get("location")
+            response = await client.get(redirected)
+
         response.raise_for_status()
+
         data = response.json()
 
-    # Case 1: API returns a plain list
-    if isinstance(data, list):
-        messages_cache = data
-        return
-
-    # Case 2: API returns an object, e.g. {"items": [...]} or similar
-    if isinstance(data, dict):
-        # try common keys first
-        for key in ("items", "results", "messages", "data"):
-            if key in data and isinstance(data[key], list):
-                messages_cache = data[key]
-                return
-
-        # If we still didn't find a list, as a fallback: first list value in the dict
-        for value in data.values():
-            if isinstance(value, list):
-                messages_cache = value
-                return
-
-    # If we reach here, we couldn't find a list of messages
-    raise RuntimeError(
-        f"Could not find a list of messages in data source response. "
-        f"Type: {type(data)}, keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}"
-    )
-
+        # Handle list or dict response
+        if isinstance(data, list):
+            messages_cache = data
+        elif isinstance(data, dict):
+            for key in ("items", "messages", "results", "data"):
+                if key in data and isinstance(data[key], list):
+                    messages_cache = data[key]
+                    break
+        else:
+            raise RuntimeError(f"Unexpected messages response type: {type(data)}")
 
 def _search_messages(query: str) -> List[Dict[str, Any]]:
     """Simple case-insensitive substring search over the 'message' field."""
