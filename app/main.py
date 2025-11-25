@@ -72,8 +72,8 @@ async def load_messages():
             return
 
     except Exception as e:
-        print("⚠️ Remote data load failed:", e)
-        print("➡️ Using fallback local messages.")
+        print(" Remote data load failed:", e)
+        print(" Using fallback local messages.")
 
     # FALLBACK DATA 
     messages_cache = [
@@ -83,12 +83,12 @@ async def load_messages():
         {"id": 4, "message": "Render deployment OK"},
     ]
 
-    print("🟢 Fallback messages loaded.")
+    print(" Fallback messages loaded.")
 
 
 @app.get("/health")
 async def health() -> Dict[str, Any]:
-    """Simple health endpoint."""
+    """ health endpoint."""
     return {"status": "ok", "messages_loaded": len(messages_cache)}
 
 

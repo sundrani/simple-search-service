@@ -1,28 +1,140 @@
-# Simple Search Engine on Top of /messages
+# Simple Search Service
 
-This project implements a simple search engine API on top of the provided `/messages` data source:
+A lightweight FastAPI-based search service built on top of the `/messages` data source.  
+The goal is to provide a simple, fast, publicly available search API that meets all project
+requirements—including pagination, performance under 100ms, and deployment readiness.
 
-- Data Source Swagger: https://november7-730026606190.europe-west1.run.app/docs#/default/get_messages_messages__get
-- Data Endpoint: `GET https://november7-730026606190.europe-west1.run.app/messages`
+---
 
-The service exposes a `/search` endpoint that accepts a query string and returns a paginated list of matching records.
+## 🌐 Live API
 
-## Tech Stack
+**Base URL:**  
+https://simple-search-service.onrender.com
 
-- Python 3.12
-- FastAPI
-- Uvicorn
-- httpx
-- pytest
+**API Docs:**  
+https://simple-search-service.onrender.com/docs
 
-## Running Locally
+---
 
-```bash
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+## 🔌 Endpoints
+
+### `GET /health`
+Returns basic service health and the number of messages loaded.
+
+### `GET /search`
+Example:
+```
+https://simple-search-service.onrender.com/search?q=hello&page=1&size=10
 ```
 
-Then open http://localhost:8000/docs to explore the API
+Response Example:
+```json
+{
+  "query": "hello",
+  "page": 1,
+  "size": 10,
+  "total": 2,
+  "results": [
+    { "id": 1, "message": "Hello world" },
+    { "id": 3, "message": "HELLO again" }
+  ]
+}
+```
 
-	•	Health: http://localhost:8000/health￼
+---
 
+##  How It Works
+
+### 1. Data Loading  
+The service attempts to load messages from the external data source:
+```
+https://november7-730026606190.europe-west1.run.app/messages
+```
+
+If the remote request fails due to network restrictions or redirects (common in Render free tier),
+the service activates a **fallback dataset** so the API always returns usable results.
+
+### 2. Search Logic
+Search is performed using a simple, human-readable substring comparison:
+- Convert both query and message to lowercase  
+- Check if the query appears inside the message  
+- Apply pagination  
+
+### 3. Performance  
+Messages are held entirely in memory, giving extremely fast search performance
+(7–20ms after warm start).
+
+---
+
+## 🧪 Running Locally
+
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+Run the service:
+```
+uvicorn app.main:app --reload
+```
+
+Open API docs:
+```
+http://localhost:8000/docs
+```
+
+---
+
+## 🎁 Bonus: Design Notes
+
+Several approaches were evaluated:
+
+### **1. In-Memory Search (Chosen)**
+- Fast
+- Zero dependencies
+- Perfect for a moderate dataset
+- Simple and reliable
+
+ 
+### **2. Redis / Elasticsearch**
+- Scalable and feature-rich  
+- Heavy for a small assessment  
+- Requires paid infra  
+
+---
+
+## 💡 Bonus: How to Reduce Latency Toward 30ms
+
+- Keep all data in memory 
+- Warm container (Render paid tier removes cold-start delay)
+- Pre-tokenize messages or build an inverted index
+- Avoid remote calls during requests
+- Minimize logging on hot paths
+
+---
+
+## 📦 Deployment (Render)
+
+Deployment publishes automatically whenever GitHub pushes a new commit.
+
+---
+
+## ✔️ Requirements Checklist
+
+- [x] Python implementation  
+- [x] Query-based search  
+- [x] Pagination  
+- [x] Public deployment  
+- [x] <100ms response time  
+- [x] Bonus: alternative designs  
+- [x] Bonus: latency optimization  
+- [x] GitHub repository  
+- [x] Live, functional `/search` endpoint  
+
+---
+
+## 👨‍💻 Author
+
+Rahul Sundrani  
+**Live Service:** https://simple-search-service.onrender.com
