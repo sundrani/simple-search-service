@@ -16,6 +16,31 @@ https://simple-search-service.onrender.com/docs
 
 ---
 
+## Important Note About the `/messages` API
+
+Locally, the service successfully fetches messages from:
+
+```
+https://november7-730026606190.europe-west1.run.app/messages/
+```
+
+However, when running on **Render (free tier)**, calls to this endpoint return:
+
+```
+402 Payment Required
+```
+
+This is an upstream restriction (likely IP‑based or billing).  
+To ensure the `/search` endpoint continues working, the application:
+
+1. Attempts remote fetch on startup  
+2. Logs the error if the request fails  
+3. **Falls back to a local in‑memory dataset**  
+4. Continues serving `/search` normally  
+
+This behavior is intentional and ensures the assignment requirements are met.
+
+
 
 ## 🔌 Endpoints
 
@@ -138,3 +163,8 @@ Deployment publishes automatically whenever GitHub pushes a new commit.
 
 Rahul Sundrani  
 **Live Service:** https://simple-search-service.onrender.com
+
+
+
+![alt text](<Screenshot 2025-11-25 at 11.26.42 AM.png>)
+![App Screenshot](SIMPLE-SEARCH-SERVICE/Screenshot 2025-11-25 at 11.26.42 AM.png)
